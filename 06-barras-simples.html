@@ -11,7 +11,7 @@
       <div class="row">
         <h2>Um SVG dinâmico</h2>
       </div>
-      <div class="row mychart" id="chart">
+      <div class="mychart" id="chart">
       </div>
     </div>
 
@@ -23,20 +23,29 @@
       .mychart text {
         fill: white;
         font: 10px sans-serif;
-        text-anchor: end;
+      }
+
+      #chart div {
+        font: 10px sans-serif;
+        background-color: steelblue;
+        text-align: right;
+        padding: 3px;
+        margin: 1px;
+        color: white;
       }
     </style>
 
     <script type="text/javascript">
-      "use strict"
       var dados = [40, 80, 96, 76, 23, 42, 32, 90, 11, 22, 14];
-      var largura = 200,
-          altura = 500;
 
-      var svg = d3.select('#chart')
-                .append('svg')
-                .attr('width', largura)
-                .attr('height', altura);
+      var margin = {top: 20, right: 20, bottom: 30, left: 40},
+        width = 960 - margin.left - margin.right,
+        height = 500 - margin.top - margin.bottom;
+
+      var xAxis = d3
+      .scaleLinear()
+      .range([0, width])
+      .domain([0, d3.max(dados)]);
 
       /* Edite o código abaixo para criar um gráfico de barras horizontais
        *
@@ -49,14 +58,18 @@
        * (Nem pense em fazer hardcoded :)).
        */
 
-      svg.selectAll('rect')
+      d3.select('.mychart')
+        .append("svg")
+        .attr('width', width)
+        .attr('height', height)
+        .selectAll("rect")
           .data(dados)
           .enter()
-            .append('rect')
-              .attr('x', 0) // A função com dois parâmetros pode entrar aqui
-              .attr('y', 0) // e aqui
-              .attr('width', 30)
-              .attr('height', 20);
+              .append("rect")
+              .attr('width', function(d) { return xAxis(d) + 'px'; })
+              .attr('y', function(d, i) { return i*(height/dados.length); })
+              .attr('x', 0)
+              .attr('height', 15);
 
       /* Mais dicas :
        * - As barras ficam mais legíveis se não encostarem umas nas outras. Para isso
