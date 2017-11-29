@@ -11,7 +11,7 @@
 <body>
   <div class="container">
     <div class="row">
-      <h2>Barras com dados findos de uma url</h2>
+      <h2>Barras com dados provenientes de uma url</h2>
     </div>
     <div class="row mychart" id="chart">
     </div>
@@ -19,15 +19,15 @@
 
   <style>
     .mychart rect {
-      fill: steelblue;
+      fill: gold;
     }
 
     .mychart rect:hover {
-      fill: goldenrod;
+      fill: darkgreen;
     }
 
     .mychart text {
-      font: 12px sans-serif;
+      font: 15px sans-serif;
       text-anchor: left;
     }
   </style>
@@ -35,16 +35,68 @@
   <script type="text/javascript">
     "use strict"
 
-    function desenhaBarras(dados) {
-      // Preencha aqui.
-    }
+    function drawBarchart(dados) {
+		var height = 400, width = 600;
+	  
+		var margin = {
+		  top: 10, 
+		  right: 20, 
+		  bottom:30, 
+		  left: 80
+		};
 
-    d3.tsv('dados/alphabet.tsv', function(dados) {
-      console.log("provavelmente acontece depois")
-      desenhaBarras(dados);
-    });
+		var widthViz = width - margin.left - margin.right;
+		var heightViz = height - margin.top - margin.bottom;
+		  
+		var barchart = d3.select('#chart')
+						.append('svg')
+						  .attr('width', widthViz + margin.left + margin.right)
+						  .attr('height', heightViz + margin.top + margin.bottom*1.5)
+						.append('g')
+						  .attr('transform', 'translate(' +  margin.left + ',' + margin.top + ')');
+		  
+		var x = d3.scaleBand()
+                .domain(dados.map((dado, indice) => dado.letra))
+                .rangeRound([0, widthViz])
+                .padding(.21); 
+				
+		var y = d3.scaleLinear()
+                .domain([0, d3.max(dados, (d,i) => d.valor)])
+                .rangeRound([heightViz, 0]);
+      /*
+       * labels
+       */
+		barchart.selectAll('g')
+              .data(dados)
+              .enter()
+                .append('rect')
+                  .attr('x', d => x(d.letra))   
+                  .attr('width', x.bandwidth())
+                  .attr('y', d => y(d.valor))
+                  .attr('height', (d) => heightViz - y(d.valor));
+      /*
+       * axis
+       */
+		barchart.append("g")
+			  .attr("class", "x axis")
+			  .attr("transform", "translate(0," + heightViz + ")")
+			  .call(d3.axisBottom(x)); // magica do d3: gera eixo a partir da escala
+		barchart.append("text")
+				.attr("transform", "translate(" + (widthViz)/2 + "," + (heightViz*2.2)/2 + ") rotate(0)")
+				.text("Letra");
+		barchart.append('g')
+			  .attr('transform', 'translate(0,0)')
+			  .call(d3.axisLeft(y))  // gera eixo a partir da escala
+		barchart.append("text")
+				.attr("transform", "translate(-55," + (heightViz + margin.top)/2 + ") rotate(-90)")
+				.text("Frequência");
+		}
+		d3.tsv('dados/alphabet.tsv', function(dados) {
+			console.log("provavelmente acontece depois")
+			drawBarchart(dados);
+		});
 
-    console.log("provavelmente acontece primeiro") // me apague quando entender.
+		console.log("provavelmente acontece primeiro") // me apague quando entender.
 
     /*
     * Assim como a função d3.tsv, existe a d3.csv e a d3.json
